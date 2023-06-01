@@ -2,7 +2,8 @@ require('dotenv').config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
-var encrypt = require("mongoose-encryption");
+//var encrypt = require("mongoose-encryption");
+var md5 = require("md5");
 const ejs = require('ejs');
 const app = express();
 
@@ -26,8 +27,8 @@ const userSchema = new mongoose.Schema({
     }
   });
 
-  var secret = process.env.SECRET;
-  userSchema.plugin(encrypt, { secret:secret, encryptedFields:['password'] });
+  //var secret = process.env.SECRET;
+  //userSchema.plugin(encrypt, { secret:secret, encryptedFields:['password'] });
 
   const User = mongoose.model('User',userSchema);
 
@@ -56,10 +57,13 @@ app.get('/api/users',async (req,res)=>{
 
 // POST REQUESTS
 app.post("/register", async (req,res)=>{
-    const newUser = new User(req.body);
+    const newUser = new User({
+        username: req.body.username,
+        password: md5(req.body.password)
+    });
+
     try{
-        const saveUser = await newUser.save();
-        console.log(saveUser)
+        await newUser.save();
         res.status(200).redirect('/')
     } catch (err) {
         console.log(err);
@@ -70,7 +74,7 @@ app.post("/register", async (req,res)=>{
 app.post('/login', async (req,res)=> {
     try{
         const reqUsername = req.body.username;
-        const reqUserPass = req.body.password;
+        const reqUserPass = md5(req.body.password);
 
         const stored = await User.findOne({username:reqUsername})
         
