@@ -136,7 +136,7 @@ app.route("/register")
 
 app.get("/secrets",function(req,res){
     User.find({secret:{$ne:null}}).then(function(foundUser){
-        console.log(foundUser);
+        //console.log(foundUser);
         res.render("secrets",{userSecret:foundUser})
     }).catch(function(err){
         console.log(err);
