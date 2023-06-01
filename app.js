@@ -3,7 +3,9 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 //var encrypt = require("mongoose-encryption");
-var md5 = require("md5");
+//var md5 = require("md5");
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 const ejs = require('ejs');
 const app = express();
 
@@ -57,32 +59,35 @@ app.get('/api/users',async (req,res)=>{
 
 // POST REQUESTS
 app.post("/register", async (req,res)=>{
-    const newUser = new User({
-        username: req.body.username,
-        password: md5(req.body.password)
-    });
 
-    try{
-        await newUser.save();
-        res.status(200).redirect('/')
-    } catch (err) {
-        console.log(err);
-        res.status(500).json(err)
-    }
+    bcrypt.hash(req.body.password, saltRounds,async function(err, hash) {
+        const newUser = new User({
+            username: req.body.username,
+            password: hash
+        });
+    
+        try{
+            await newUser.save();
+            res.status(200).redirect('/')
+        } catch (err) {
+            console.log(err);
+            res.status(500).json(err)
+        }
+    });
 })
 
 app.post('/login', async (req,res)=> {
     try{
         const reqUsername = req.body.username;
-        const reqUserPass = md5(req.body.password);
+        const reqUserPass = req.body.password;
 
-        const stored = await User.findOne({username:reqUsername})
+        const stored = await User.findOne({username:reqUsername});
         
-        if(reqUserPass === stored.password){
-            res.status(200).render('secrets')
-        } else {
-            res.status(404).json('User not found!')
-        }
+        bcrypt.compare(reqUserPass, stored.password, function(err, result) {
+            if(result === true){
+                res.status(200).render('secrets');
+            }
+        });
     } catch (err) {
         console.log(err);
         res.status(500).json(err)
