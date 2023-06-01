@@ -1,9 +1,9 @@
+require('dotenv').config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 var encrypt = require("mongoose-encryption");
 const ejs = require('ejs');
-const dotenv = require('dotenv');
 const app = express();
 
 dotenv.config()
