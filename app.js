@@ -6,7 +6,6 @@ var encrypt = require("mongoose-encryption");
 const ejs = require('ejs');
 const app = express();
 
-dotenv.config()
 app.set('view engine','ejs');
 
 app.use(express.static('public'));
